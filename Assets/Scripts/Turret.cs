@@ -21,6 +21,7 @@ public class Turret : MonoBehaviour
     public bool useLaser;
     public LineRenderer lineRenderer;
     public ParticleSystem impactEffect;
+    public Light impactLight;
 
     [Header("Unity Setup Fields")]
     public string enemyTag = "Enemy";
@@ -78,6 +79,7 @@ public class Turret : MonoBehaviour
                 {
                     lineRenderer.enabled = false;
                     impactEffect.Stop();
+                    impactLight.enabled = false;
                 }
             }
 
@@ -113,6 +115,7 @@ public class Turret : MonoBehaviour
         {
             lineRenderer.enabled = true;
             impactEffect.Play();
+            impactLight.enabled = true;
         }
 
         // render the beam
@@ -123,7 +126,7 @@ public class Turret : MonoBehaviour
         Vector3 direction = firePoint.position - target.position;
         impactEffect.transform.rotation = Quaternion.LookRotation(direction);
         // offset particle effect to edge of enemy
-        float distanceToTargetEdge = 0.5f;
+        float distanceToTargetEdge = 1f;
         impactEffect.transform.position = target.position
             + direction.normalized * distanceToTargetEdge;
     }
