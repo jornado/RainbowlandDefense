@@ -2,9 +2,8 @@
 
 public class Shop : MonoBehaviour
 {
-    public TurretBlueprint standardTurret;
-    public TurretBlueprint missileLauncher;
-    public TurretBlueprint laserBeamer;
+    public TurretBlueprint bananaTurret;
+    public TurretBlueprint unicornBeamer;
 
     BuildManager buildManager;
 
@@ -12,25 +11,17 @@ public class Shop : MonoBehaviour
     {
         buildManager = BuildManager.instance;
     }
-
-    /* Select standard turret for purchase */
-    public void SelectStandardTurret()
+    /* Select banana for purchase */
+    public void SelectBananaTurret()
     {
-        Debug.Log("Standard turret selected");
-        buildManager.SelectTurretToBuild(standardTurret);
+        Debug.Log("Banana selected");
+        buildManager.SelectTurretToBuild(bananaTurret);
     }
 
-    /* Select missile launcer for purchase */
-    public void SelectMissileLauncher()
+    /* Select banana for purchase */
+    public void SelectUnicornBeamer()
     {
-        Debug.Log("Missile launcher selected");
-        buildManager.SelectTurretToBuild(missileLauncher);
-    }
-
-    /* Select laser beamer for purchase */
-    public void SelectLaserBeamer()
-    {
-        Debug.Log("Laser beamer selected");
-        buildManager.SelectTurretToBuild(laserBeamer);
+        Debug.Log("Unicorn selected");
+        buildManager.SelectTurretToBuild(unicornBeamer);
     }
 }

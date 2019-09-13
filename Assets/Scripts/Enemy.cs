@@ -1,40 +1,68 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 public class Enemy : MonoBehaviour
 {
-    public float speed = 10f;
-
-    private Transform target;
-    private int waypointIndex;
-
-    public int health = 100;
-    public int monetaryValue = 50;
+    public float startSpeed = 15f;
+    [HideInInspector]
+    public float speed;
+    public float startHealth = 100f;
+    private float health;
+    public int worth = 5;
 
     public GameObject deathEffect;
 
-    private void Start()
-    {
-        // Start with the first waypoint
-        target = Waypoints.points[0];
+    [Header("Unity Stuff")]
+    public Image healthBar;
+
+    void Start() {
+        speed = startSpeed;
+        health = GetStartHealth();
     }
 
-    /* Navigate to each waypoint */
-    private void Update()
-    {
-        // move toward waypoint
-        Vector3 direction = target.position - transform.position;
-        transform.Translate(direction.normalized * speed * Time.deltaTime, Space.World);
+	float GetStartHealth()
+	{
+		int wave = WaveSpawner.instance.GetCurrentWave();
 
-        // if enemy has arrived at about waypoint location, move to next waypoint
-        if (Vector3.Distance(transform.position, target.position) < 0.4f)
-        {
-            GetNextWaypoint();
-        }
-    }
+		if (wave >= 15)
+		{
+			return startHealth * 1.4f;
+		}
+		else if (wave >= 25)
+		{
+			return startHealth * 1.6f;
+		}
+		else if (wave >= 35)
+		{
+			return startHealth * 1.8f;
+		}
+		else if (wave >= 45)
+		{
+			return startHealth * 2.0f;
+		}
+		else if (wave >= 55)
+		{
+			return startHealth * 2.2f;
+		}
+		else if (wave >= 65)
+		{
+			return startHealth * 3.5f;
+		}
+		else if (wave >= 85)
+		{
+			return startHealth * 5f;
+		}
+		else
+		{
+			return startHealth;
+		}
+	}
 
-    public void TakeDamage(int amount)
+	public void TakeDamage(float amount)
     {
         health -= amount;
+
+        healthBar.fillAmount = health / startHealth;
 
         if (health <= 0)
         {
@@ -44,7 +72,7 @@ public class Enemy : MonoBehaviour
 
     void Die()
     {
-        PlayerStats.Money += monetaryValue;
+        PlayerStats.Money += worth;
 
         GameObject effect = (GameObject)Instantiate(deathEffect, transform.position, transform.rotation);
         Destroy(effect, 5f);
@@ -52,22 +80,8 @@ public class Enemy : MonoBehaviour
         Destroy(gameObject);
     }
 
-    /* Update destination to next waypoint target */
-    void GetNextWaypoint()
+    public void Slow(float slowAmount)
     {
-        // Remove enemy when it reaches the END 
-        if (waypointIndex >= Waypoints.points.Length - 1)
-        {
-            EndPath();
-            return;
-        }
-        waypointIndex++;
-        target = Waypoints.points[waypointIndex];
-    }
-
-    void EndPath()
-    {
-        PlayerStats.Lives --;
-        Destroy(gameObject);
+        speed = startSpeed * (1f - slowAmount);
     }
 }

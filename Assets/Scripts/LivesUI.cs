@@ -8,6 +8,12 @@ public class LivesUI : MonoBehaviour
     /* Update player's remaining lives */
     void Update()
     {
-        livesText.text = PlayerStats.Lives + " LIVES";
+        if (PlayerStats.Lives == 1)
+        {
+            livesText.text = PlayerStats.Lives + " LIFE";
+        } else
+        {
+            livesText.text = PlayerStats.Lives + " LIVES";
+        }
     }
 }

@@ -6,6 +6,7 @@ public class Turret : MonoBehaviour
 {
     // enemy to shoot at
     private Transform target;
+    private Enemy targetEnemy;
 
     [Header("General")]
     // range of turret fire
@@ -19,9 +20,13 @@ public class Turret : MonoBehaviour
 
     [Header("Use Laser")]
     public bool useLaser;
+    public int damageOverTime = 30;
+    public float slowAmount = 0.5f;
     public LineRenderer lineRenderer;
     public ParticleSystem impactEffect;
     public Light impactLight;
+    public AudioSource laserImpactSound;
+    public AudioSource laserRechargeSound;
 
     [Header("Unity Setup Fields")]
     public string enemyTag = "Enemy";
@@ -61,6 +66,7 @@ public class Turret : MonoBehaviour
         if (nearestEnemy != null && shortestDistance <= range)
         {
             target = nearestEnemy.transform;
+            targetEnemy = nearestEnemy.GetComponent<Enemy>();
         } else
         {
             target = null;
@@ -80,6 +86,8 @@ public class Turret : MonoBehaviour
                     lineRenderer.enabled = false;
                     impactEffect.Stop();
                     impactLight.enabled = false;
+                    // play recharge sound
+                    laserRechargeSound.Play();
                 }
             }
 
@@ -110,6 +118,10 @@ public class Turret : MonoBehaviour
     /* Make a laser beam shoot from turret to enemy */
     void Laser()
     {
+        // damage the enemy each second
+        targetEnemy.TakeDamage(damageOverTime * Time.deltaTime);
+        targetEnemy.Slow(slowAmount);
+
         // enable the beam and play the particle effect
         if (!lineRenderer.enabled)
         {
@@ -129,6 +141,9 @@ public class Turret : MonoBehaviour
         float distanceToTargetEdge = 1f;
         impactEffect.transform.position = target.position
             + direction.normalized * distanceToTargetEdge;
+
+        // play laser sound
+        laserImpactSound.Play();
     }
 
     /* Instatiate a bullet and head towards the target */

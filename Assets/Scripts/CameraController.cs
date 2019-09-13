@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Text;
+using UnityEngine;
+using TMPro;
+using System.Collections.Generic;
 
 public class CameraController : MonoBehaviour
 {
@@ -9,7 +12,8 @@ public class CameraController : MonoBehaviour
     public float scrollMinY = 10f;
     public float scrollMaxY = 80f;
 
-    private bool doMovement = true;
+    public TextMeshProUGUI xyzUi;
+    public int scrollLevel;
 
     // These are messed up, because the board is turned, oops :(
     private Vector3 realForward = Vector3.left;
@@ -17,12 +21,31 @@ public class CameraController : MonoBehaviour
     private Vector3 realLeft = Vector3.back;
     private Vector3 realRight = Vector3.forward;
 
+    private Dictionary<int, float[]> movementValues = new Dictionary<int, float[]>();
+
+    void Awake()
+    {
+        // Set up maximum movement values in each direction fo each zoom level
+        // Top, Bottom, Left, Right
+        movementValues.Add(1, new float[] { 5f, 90f, 19f, 90f });
+        movementValues.Add(2, new float[] { 15f, 90f, 25f, 70f });
+        movementValues.Add(3, new float[] { 10f, 90f, 30f, 60f });
+        movementValues.Add(4, new float[] { 25f, 90f, 35f, 60f });
+        movementValues.Add(5, new float[] { 35f, 90f, 37f, 50f });
+        movementValues.Add(6, new float[] { 49f, 90f, 40f, 45f });
+        movementValues.Add(7, new float[] { 60f, 90f, 40f, 45f });
+        movementValues.Add(8, new float[] { 70f, 95f, 40f, 45f });
+    }
+
     /* Move the camera with the mouse/WASD keys */
     void Update()
     {
-        // Check if ESC is pressed
-        if (DisableMovement())
+        // Debug stuff: xyzUi.text = transform.position + " : tb.y.lr " + scrollLevel;
+
+        // Disable camera controls when game is over
+        if (GameManager.GameIsOver)
         {
+            this.enabled = false;
             return;
         }
 
@@ -36,50 +59,127 @@ public class CameraController : MonoBehaviour
     /* Scrolling controls */
     void MaybeZoomCamera()
     {
-        // TODO: RTS-Camera scrolling: http://bit.ly/2b3SHDY
-        float scroll = Input.GetAxis("Mouse ScrollWheel");
-        Vector3 position = transform.position;
+		
 
-        position.y -= scroll * 1000 * scrollSpeed * Time.deltaTime;
+		// TODO: RTS-Camera scrolling: http://bit.ly/2b3SHDY
+		float scroll = Input.GetAxis("Mouse ScrollWheel");
+        Vector3 position = transform.position;
+		if (Input.GetKey("q"))
+		{
+			position.y = position.y - 1;
+		}
+		if (Input.GetKey("e"))
+		{
+			position.y = position.y + 1;
+		}
+
+		position.y -= scroll * 1000 * scrollSpeed * Time.deltaTime;
+        scrollLevel = (int)position.y / 10;
         // constrain scrolling, so not too high or low
         position.y = Mathf.Clamp(position.y, scrollMinY, scrollMaxY);
         transform.position = position;
     }
 
-    /* Camera panning controls */
-    void MaybeMoveCamera()
+    /* Don't allow movement beyond a certain point in any direction */
+    bool ExceedsMaxPosition(string direction)
     {
-        if (Input.GetKey("w") || Input.mousePosition.y >= Screen.height - panBorderThickness)
+        if (scrollLevel <= 0)
+            return false;
+		if (scrollLevel > 8)
+			scrollLevel = 8;
+        
+        float[] maxValues = movementValues[scrollLevel];
+        StringBuilder greaterOrLess = new StringBuilder("");
+
+        if (direction == "forward")
         {
-            transform.Translate(realForward * panSpeed * Time.deltaTime, Space.World);
+            return transform.position.x <= maxValues[0];
         }
-        if (Input.GetKey("a") || Input.mousePosition.x <= panBorderThickness)
+        if (direction == "backward")
         {
-            transform.Translate(realLeft * panSpeed * Time.deltaTime, Space.World);
+            return transform.position.x >= maxValues[1];
         }
-        if (Input.GetKey("s") || Input.mousePosition.y <= panBorderThickness)
+        if (direction == "left")
         {
-            transform.Translate(realBack * panSpeed * Time.deltaTime, Space.World);
+            return transform.position.z <= maxValues[2];
         }
-        if (Input.GetKey("d") || Input.mousePosition.x >= Screen.width - panBorderThickness)
+        if (direction == "right")
         {
-            transform.Translate(realRight * panSpeed * Time.deltaTime, Space.World);
+            return transform.position.z >= maxValues[3];
+        }
+        else
+        {
+            Debug.Log("Unexpected ExceeedsMaxPosition value! " + direction);
+            return true;
         }
     }
 
-    /* Use Escape key to prevent movement during testing */
-    bool DisableMovement()
+    /* Camera panning controls */
+    void MaybeMoveCamera()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        // If we move beyond valid bounds, start going in opposite direction
+        if (ExceedsMaxPosition("forward"))
         {
-            doMovement = !doMovement;
+            MoveInDirection(realBack);
+            return;
+        }
+        if (ExceedsMaxPosition("left"))
+        {
+            MoveInDirection(realRight);
+            return;
+        }
+        if (ExceedsMaxPosition("backward"))
+        {
+            MoveInDirection(realForward);
+            return;
+        }
+        if (ExceedsMaxPosition("right"))
+        {
+            MoveInDirection(realLeft);
+            return;
         }
 
-        if (doMovement)
+        // Move in the direction of mouse or WASD
+        if (ShouldMoveForward())
         {
-            return false;
+            MoveInDirection(realForward);
         }
+        if (ShouldMoveLeft())
+        {
+            MoveInDirection(realLeft);
+        }
+        if (ShouldMoveBackward())
+        {
+            MoveInDirection(realBack);
+        }
+        if (ShouldMoveRight())
+        {
+            MoveInDirection(realRight);
+        }
+    }
 
-        return true;
+    void MoveInDirection(Vector3 direction)
+    {
+        transform.Translate(direction * panSpeed * Time.deltaTime, Space.World);
+    }
+
+    bool ShouldMoveForward()
+    {
+        return Input.GetKey("w") || Input.mousePosition.y >= Screen.height - panBorderThickness;
+    }
+
+    bool ShouldMoveBackward()
+    {
+        return Input.GetKey("s") || Input.mousePosition.y <= panBorderThickness;
+    }
+
+    bool ShouldMoveLeft()
+    {
+        return Input.GetKey("a") || Input.mousePosition.x <= panBorderThickness;
+    }
+
+    bool ShouldMoveRight()
+    {
+        return Input.GetKey("d") || Input.mousePosition.x >= Screen.width - panBorderThickness;
     }
 }

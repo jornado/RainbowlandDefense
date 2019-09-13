@@ -8,6 +8,7 @@ public class Bullet : MonoBehaviour
     public int damage = 50;
     public float explosionRadius;
     public GameObject impactEffect;
+    public AudioSource impactSound;
 
     private string enemyTag = "Enemy";
 
@@ -47,6 +48,10 @@ public class Bullet : MonoBehaviour
     /* Hit the enemy and make a particle effect */
     void HitTarget()
     {
+        Debug.Log("Played sound");
+        // play splat sound
+        impactSound.Play();
+
         // Make a bullet particle effect
         GameObject effectIns = (GameObject)Instantiate(
             impactEffect, transform.position, transform.rotation);

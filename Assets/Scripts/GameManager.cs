@@ -4,12 +4,22 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    private bool gameEnded;
+    public static bool GameIsOver;
+    public GameObject gameOverUI;
+
+    // Make sure game is not over when scene is loaded
+    void Start()
+    {
+        GameIsOver = false;
+    }
 
     // Update is called once per frame
     void Update()
     {
-        if (gameEnded)
+        if (Input.GetKeyDown("z"))
+            EndGame();
+
+        if (GameIsOver)
             return;
 
         // end of the game!
@@ -19,9 +29,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // show the Game Over menu
     void EndGame()
     {
-        gameEnded = true;
-        Debug.Log("GAME OVER MAN!");
+        GameIsOver = true;
+        gameOverUI.SetActive(true);
     }
 }
