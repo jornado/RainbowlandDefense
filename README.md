@@ -1,5 +1,7 @@
 # Rainbowland Defense
 
+![](https://img.itch.zone/aW1nLzI0NzQ4ODIucG5n/original/FrNRxB.png)
+
 This mini tower defense game is inspired by the Aug 17, 2019 counter-protest in Portland, OR. Our heroes, the bananas and unicorns, defend Rainbowland from the evil Poop Boys' march!
 
 This was created for [Rainbow Game Jam 2019](https://oslisloth.itch.io/rainbowdefense "link title")
